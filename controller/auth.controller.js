@@ -1,12 +1,15 @@
 const  argon2 = require('argon2');
 const User = require('./../model/user.model.js');
+const Role = require('./../model/role.model.js');
 const jwt = require('jsonwebtoken');
+require('dotenv').config();
 
 exports.login = async (req, res) => {
     let user = await User.findOne({
         where : {
             email: req.body.email
-        }
+        },
+        include: [Role]
     });
     if(!user){
         return res.status(400).json("Login or password incorrect");
@@ -16,8 +19,9 @@ exports.login = async (req, res) => {
         return res.status(400).json("Login or password incorrect");
     }
     const token = jwt.sign({
-        id: user.id
-    },"cle_secrete");
+        id: user.id,
+        role: user.Roles
+    },process.env.JWT_KEY);
     return res.status(200).json(token);
 }
 
